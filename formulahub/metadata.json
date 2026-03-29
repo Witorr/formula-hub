@@ -1,0 +1,5 @@
+{
+  "name": "FormulaHub",
+  "description": "Hub comparativo de fórmulas entre Excel, DAX, Power Fx, SQL e Python.",
+  "requestFramePermissions": []
+}
