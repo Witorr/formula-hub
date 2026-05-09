@@ -246,6 +246,7 @@ export default function Home() {
   const [compareMode, setCompareMode] = useState(false);
   const [vizState, setVizState] = useState<{ operation: Operation; language: Language } | null>(null);
   const [navScrolled, setNavScrolled] = useState(false);
+  const [isSpotlightOpen, setIsSpotlightOpen] = useState(false);
 
   const formulasSectionRef = useRef<HTMLElement>(null);
 
@@ -271,19 +272,29 @@ export default function Home() {
     return () => window.removeEventListener('scroll', handler);
   }, []);
 
-  // Ctrl+K para focar busca (estilo VSCode)
+  // Ctrl+K para abrir Spotlight Search (estilo Mac/VSCode)
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
       if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
         e.preventDefault();
-        const el = document.getElementById('hero-search');
-        el?.focus();
-        el?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        setIsSpotlightOpen(true);
+      }
+      if (e.key === 'Escape') {
+        setIsSpotlightOpen(false);
       }
     };
     window.addEventListener('keydown', handler);
     return () => window.removeEventListener('keydown', handler);
   }, []);
+
+  // Impede o scroll de fundo quando o modal estiver aberto
+  useEffect(() => {
+    if (isSpotlightOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = 'unset';
+    }
+  }, [isSpotlightOpen]);
 
   const scrollToFormulas = useCallback(() => {
     formulasSectionRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -330,17 +341,120 @@ export default function Home() {
               </span>
             </a>
 
-            {/* Nav links (inline com o logo, como no VSCode) */}
-            <nav className="hidden md:flex items-center gap-6">
-              <a href="#hero" className="text-sm text-zinc-400 hover:text-white transition-colors duration-200">
+            {/* Nav links (inline com o logo, como no VSCode/GitHub) */}
+            <nav className="hidden md:flex items-center gap-1">
+              <a href="#hero" className="text-sm text-zinc-400 hover:text-white hover:bg-zinc-800/40 px-3 py-1.5 rounded-md transition-colors duration-200 border border-transparent hover:border-zinc-700/50">
                 Início
               </a>
-              <a href="#categories" className="text-sm text-zinc-400 hover:text-white transition-colors duration-200">
-                Categorias
-              </a>
-              <a href="#formulas" className="text-sm text-zinc-400 hover:text-white transition-colors duration-200">
-                Fórmulas
-              </a>
+              
+              {/* Categorias Dropdown */}
+              <div className="relative group">
+                <button 
+                  onClick={() => document.getElementById('categories')?.scrollIntoView({ behavior: 'smooth' })}
+                  className="relative z-50 flex items-center gap-1.5 text-sm text-zinc-400 group-hover:text-white px-3 py-2 rounded-md group-hover:rounded-b-none transition-colors border border-transparent group-hover:border-zinc-800 group-hover:bg-zinc-950 group-hover:border-b-zinc-950"
+                >
+                  Categorias
+                  <svg className="w-3.5 h-3.5 opacity-60 group-hover:opacity-100 transition-all duration-200 group-hover:-rotate-180" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                  </svg>
+                </button>
+
+                {/* Dropdown Menu - Fundido ao botão */}
+                <div className="absolute top-full left-0 w-60 -mt-px opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-150 ease-out z-40">
+                  <div className="p-1.5 rounded-b-xl rounded-tr-xl border border-zinc-800 bg-zinc-950 shadow-xl shadow-black/80 overflow-hidden">
+                    <div className="px-2.5 py-2 text-xs font-semibold text-zinc-500 uppercase tracking-wider mb-0.5">
+                      Explorar por
+                    </div>
+                    {categories.map(cat => (
+                      <button 
+                        key={cat} 
+                        onClick={() => handleCategoryClick(cat)} 
+                        className="w-full text-left flex items-center justify-between px-3 py-2 text-sm text-zinc-400 hover:text-white hover:bg-zinc-800/60 rounded-lg transition-colors group/item"
+                      >
+                        {cat}
+                        <svg className="w-3.5 h-3.5 opacity-0 group-hover/item:opacity-100 transition-all -translate-x-2 group-hover/item:translate-x-0 text-violet-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 5l7 7-7 7" />
+                        </svg>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              </div>
+
+              {/* Fórmulas Dropdown */}
+              <div className="relative group">
+                <button 
+                  onClick={scrollToFormulas}
+                  className="relative z-50 flex items-center gap-1.5 text-sm text-zinc-400 group-hover:text-white px-3 py-2 rounded-md group-hover:rounded-b-none transition-colors border border-transparent group-hover:border-zinc-800 group-hover:bg-zinc-950 group-hover:border-b-zinc-950"
+                >
+                  Fórmulas
+                  <svg className="w-3.5 h-3.5 opacity-60 group-hover:opacity-100 transition-all duration-200 group-hover:-rotate-180" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                  </svg>
+                </button>
+
+                {/* Dropdown Menu - Fundido ao botão */}
+                <div className="absolute top-full left-0 w-64 -mt-px opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-150 ease-out z-40">
+                  <div className="p-1.5 rounded-b-xl rounded-tr-xl border border-zinc-800 bg-zinc-950 shadow-xl shadow-black/80 overflow-hidden">
+                    <div className="px-2.5 py-2 text-xs font-semibold text-zinc-500 uppercase tracking-wider mb-0.5">
+                      Visualização
+                    </div>
+                    <button 
+                      onClick={() => {
+                        setSearch('');
+                        setActiveCategory(null);
+                        setCompareMode(false);
+                        scrollToFormulas();
+                      }} 
+                      className="w-full text-left flex items-center justify-between px-3 py-2 text-sm text-zinc-400 hover:text-white hover:bg-zinc-800/60 rounded-lg transition-colors group/item"
+                    >
+                      Explorar Todas
+                      <svg className="w-3.5 h-3.5 opacity-0 group-hover/item:opacity-100 transition-all -translate-x-2 group-hover/item:translate-x-0 text-violet-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 5l7 7-7 7" />
+                      </svg>
+                    </button>
+                    <button 
+                      onClick={() => {
+                        setCompareMode(true);
+                        scrollToFormulas();
+                      }} 
+                      className="w-full text-left flex items-center justify-between px-3 py-2 text-sm text-zinc-400 hover:text-white hover:bg-zinc-800/60 rounded-lg transition-colors group/item mt-0.5"
+                    >
+                      Modo Comparativo
+                      <span className="text-[10px] py-0.5 px-2 bg-violet-500/15 text-violet-300 rounded border border-violet-500/20 font-medium tracking-wide">
+                        NOVO
+                      </span>
+                    </button>
+                    
+                    <div className="h-px bg-zinc-800/60 my-2 mx-2" />
+                    
+                    <div className="px-2.5 py-2 text-xs font-semibold text-zinc-500 uppercase tracking-wider mb-0.5">
+                      Linguagens Suportadas
+                    </div>
+                    <div className="grid grid-cols-2 gap-1 px-1 pb-1">
+                      {(['Excel', 'DAX', 'Power Fx', 'SQL', 'Python'] as const).map((lang, i) => {
+                        const dotColors = [
+                          'bg-emerald-400', 'bg-yellow-400', 'bg-purple-400', 'bg-blue-400', 'bg-sky-400'
+                        ];
+                        return (
+                          <button 
+                            key={lang}
+                            onClick={() => {
+                              setSearch('');
+                              setActiveCategory(null);
+                              scrollToFormulas();
+                            }}
+                            className="text-left flex items-center gap-2 px-2 py-1.5 text-xs text-zinc-400 hover:text-white hover:bg-zinc-800/60 rounded-lg transition-colors"
+                          >
+                            <span className={`w-1.5 h-1.5 rounded-full ${dotColors[i]}`} />
+                            {lang}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                </div>
+              </div>
             </nav>
           </div>
 
@@ -351,11 +465,7 @@ export default function Home() {
           <div className="flex items-center gap-2.5">
             {/* Search shortcut hint (estilo VSCode) */}
             <button
-              onClick={() => {
-                const el = document.getElementById('hero-search');
-                el?.focus();
-                el?.scrollIntoView({ behavior: 'smooth', block: 'center' });
-              }}
+              onClick={() => setIsSpotlightOpen(true)}
               className="hidden lg:flex items-center gap-2 text-sm text-zinc-500 hover:text-zinc-300 px-3 py-1.5 rounded-lg border border-zinc-800 hover:border-zinc-600 bg-zinc-900/50 transition-all duration-200"
             >
               <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -786,6 +896,107 @@ export default function Home() {
           initialLanguage={vizState.language}
           onClose={() => setVizState(null)}
         />
+      )}
+
+      {/* ══════════════════════════════════════════════════════════════════════
+          Spotlight Search / Command Palette
+          ═══════════════════════════════════════════════════════════════════ */}
+      {isSpotlightOpen && (
+        <div className="fixed inset-0 z-[100] flex items-start justify-center pt-[10vh] sm:pt-[15vh] px-4">
+          {/* Backdrop responsivo e opaco (desfocado nativo) */}
+          <div 
+            className="absolute inset-0 bg-black/60 backdrop-blur-sm transition-opacity" 
+            onClick={() => setIsSpotlightOpen(false)}
+          />
+          
+          {/* Modal Container */}
+          <div 
+            className="relative w-full max-w-3xl bg-zinc-950 border border-zinc-800 rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[70vh] sm:max-h-[80vh] shadow-[0_0_100px_rgba(0,0,0,0.8)]"
+            style={{ animation: 'slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1)' }}
+          >
+            {/* Barra de Input superior do popup */}
+            <div className="flex items-center px-5 sm:px-6 py-2 border-b border-zinc-800/80 bg-zinc-900/50">
+              <svg className="w-5 h-5 sm:w-6 sm:h-6 text-violet-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-4.35-4.35M17 11A6 6 0 1 1 5 11a6 6 0 0 1 12 0z" />
+              </svg>
+              <input
+                autoFocus
+                type="text"
+                placeholder="Procurar fórmula... Ex: PROCV, SOMASE, IF"
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                className="flex-1 bg-transparent border-none py-4 px-4 text-lg sm:text-xl text-white placeholder-zinc-500 outline-none w-full font-medium"
+              />
+              <button 
+                onClick={() => setIsSpotlightOpen(false)} 
+                className="shrink-0 flex items-center gap-1.5 text-[10px] sm:text-xs text-zinc-500 hover:text-zinc-300 font-mono"
+              >
+                <kbd className="bg-zinc-800/80 border border-zinc-700 rounded px-1.5 py-0.5 shadow-sm">ESC</kbd>
+                <span className="hidden sm:inline">para fechar</span>
+              </button>
+            </div>
+            
+            {/* Lista de Resultados Interna ao Modal */}
+            <div className="overflow-y-auto p-2 sm:p-3" style={{ scrollbarWidth: 'thin' }}>
+              {filtered.length === 0 ? (
+                <div className="py-16 text-center">
+                  <div className="w-16 h-16 mx-auto mb-4 opacity-20">
+                     <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}><path strokeLinecap="round" strokeLinejoin="round" d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                  </div>
+                  <p className="text-zinc-400 font-medium">Nenhuma fórmula encontrada para <span className="text-white">"{search}"</span></p>
+                  <p className="text-sm text-zinc-600 mt-2">Tente buscar por termos como "Buscar", "Somar" ou "Texto".</p>
+                </div>
+              ) : (
+                <div className="space-y-1">
+                  <div className="px-3 py-2 text-xs font-semibold text-zinc-500 uppercase tracking-wider">
+                    {search ? 'Resultados da Busca' : 'Fórmulas Disponíveis'}
+                  </div>
+                  {filtered.map(op => (
+                    <button
+                      key={op.name}
+                      onClick={() => {
+                        setSearch(op.name);
+                        setActiveCategory(null);
+                        setIsSpotlightOpen(false);
+                        scrollToFormulas();
+                      }}
+                      className="w-full text-left p-3 hover:bg-zinc-800/80 focus:bg-zinc-800/80 rounded-xl flex items-center justify-between group transition-colors outline-none border border-transparent hover:border-zinc-700/50"
+                    >
+                      <div className="flex items-center gap-4">
+                        <div className={`w-12 h-12 rounded-xl flex items-center justify-center shrink-0 ${CATEGORY_CONFIG[op.category]?.iconBg || 'bg-zinc-800'}`}>
+                           <div className="w-7 h-7">
+                              <span className="text-2xl">{CATEGORY_CONFIG[op.category]?.icon}</span>
+                           </div>
+                        </div>
+                        <div>
+                          <div className="flex items-center gap-2 mb-0.5">
+                             <h4 className="text-white font-medium sm:text-lg leading-none">{op.name}</h4>
+                             <span className="px-2 py-0.5 rounded text-[10px] font-semibold bg-zinc-800 text-zinc-400 border border-zinc-700">
+                                {op.category}
+                             </span>
+                          </div>
+                          <p className="text-xs sm:text-sm text-zinc-500 line-clamp-1">{op.description}</p>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-3 pr-2">
+                         <span className="hidden sm:flex text-xs text-zinc-600 font-medium group-hover:text-violet-400 transition-colors">Explorar</span>
+                         <svg className="w-5 h-5 text-zinc-600 group-hover:text-violet-400 transition-colors -translate-x-2 group-hover:translate-x-0 transition-all shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                         </svg>
+                      </div>
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+            
+            {/* Modal Footer / Hint (Instrução estática estilo VS Code Command Palette) */}
+            <div className="hidden sm:flex items-center gap-4 px-5 py-3 border-t border-zinc-800/50 bg-zinc-950/50 relative z-20">
+               <span className="text-xs text-zinc-400 font-medium flex items-center gap-1.5"><kbd className="bg-zinc-800 px-1.5 py-0.5 rounded border border-zinc-700 text-[10px]">↑</kbd> <kbd className="bg-zinc-800 px-1.5 py-0.5 rounded border border-zinc-700 text-[10px]">↓</kbd> para navegar</span>
+               <span className="text-xs text-zinc-400 font-medium flex items-center gap-1.5"><kbd className="bg-zinc-800 px-1.5 py-0.5 rounded border border-zinc-700 text-[10px]">Enter</kbd> para selecionar</span>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );
