@@ -68,6 +68,7 @@ export function FormulaCard({
   return (
     <div
       className="
+        h-full
         group bg-zinc-900 border border-zinc-800 rounded-2xl overflow-hidden flex flex-col
         hover:border-zinc-700 hover:shadow-xl hover:shadow-black/40
         transition-all duration-300
