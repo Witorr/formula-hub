@@ -5,6 +5,7 @@ import { operations, categories, Language, Operation } from '@/data/formulas';
 import { DotLottieReact } from '@lottiefiles/dotlottie-react';
 import { FormulaCard } from '@/components/FormulaCard';
 import { FormulaVisualizer } from '@/components/FormulaVisualizer';
+import { AITranslator } from '@/components/AITranslator';
 
 /* ═══════════════════════════════════════════════════════════════════════════════
    Matrix Rain — canvas com caracteres de fórmula caindo estilo terminal
@@ -718,20 +719,27 @@ export default function Home() {
             ))}
           </div>
         ) : (
-          <div className="text-center py-20 sm:py-28">
+          <div className="text-center py-20 sm:py-28 max-w-4xl mx-auto">
             <div className="w-20 h-20 sm:w-24 sm:h-24 mx-auto mb-6 rounded-2xl bg-zinc-900 border border-zinc-800 flex items-center justify-center">
-              <span className="text-4xl sm:text-5xl">🔍</span>
+              <span className="text-4xl sm:text-5xl">🤖</span>
             </div>
-            <p className="text-zinc-400 text-base sm:text-lg font-medium">Nenhuma fórmula encontrada</p>
-            <p className="text-zinc-600 text-sm sm:text-base mt-1.5">Tente ajustar os filtros ou termos de busca</p>
-            {search && (
-              <button
-                onClick={() => setSearch('')}
-                className="text-sm sm:text-base text-violet-400 hover:text-violet-300 mt-4 underline underline-offset-4 transition-colors"
-              >
-                Limpar busca
-              </button>
-            )}
+            <h3 className="text-2xl font-bold mb-2">Fórmula não catalogada!</h3>
+            <p className="text-zinc-400 text-sm sm:text-base mb-10">Não encontramos essa fórmula no catálogo estático, mas nossa Inteligência Artificial pode gerar ela agora mesmo para você.</p>
+            
+            <div className="text-left mt-6">
+              <AITranslator initialSearch={search} />
+            </div>
+
+            <div className="mt-8">
+              {search && (
+                <button
+                  onClick={() => setSearch('')}
+                  className="text-sm sm:text-base text-violet-400 hover:text-violet-300 underline underline-offset-4 transition-colors"
+                >
+                  Limpar busca e voltar ao catálogo
+                </button>
+              )}
+            </div>
           </div>
         )}
       </section>
