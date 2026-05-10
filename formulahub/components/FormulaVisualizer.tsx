@@ -341,7 +341,7 @@ export function FormulaVisualizer({ operation, initialLanguage, onClose }: Formu
   const [stepIndex, setStepIndex] = useState(0);
   const [playing, setPlaying] = useState(true);
 
-  const viz = visualizations[operation.id];
+  const viz = operation.visualization || visualizations[operation.id];
   const languages = Object.keys(operation.equivalents) as Language[];
   const formula = operation.equivalents[activeLang]?.example ?? '';
 

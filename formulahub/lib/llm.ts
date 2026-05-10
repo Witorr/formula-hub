@@ -3,49 +3,79 @@ import { GoogleGenAI } from '@google/genai';
 // Instância do cliente com API key explícita
 const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY! });
 
-// Modelo com maior quota no tier gratuito
+// Modelo com maior quota no tier gratuito e rapidez
 const MODEL = 'gemini-2.5-flash';
 
-export async function translateFormula(
-  sourceLanguage: string,
-  targetLanguage: string,
-  sourceCode: string
-) {
-  const prompt = `
-Você é um assistente especializado em linguagens de dados e programação.
-Traduza a seguinte fórmula/código de ${sourceLanguage} para ${targetLanguage}.
+export async function generateDynamicFormula(searchQuery: string) {
+  const prompt = `Você é um assistente especializado em linguagens de dados e programação.
+O usuário buscou a seguinte fórmula/operação que NÃO existe no catálogo: "${searchQuery}".
+Gere uma estrutura completa, contendo nome da operação, categoria, as 5 equivalências obrigatórias e os passos de visualização.
 
-Código original:
-\`\`\`
-${sourceCode}
-\`\`\`
-
-Regras:
-1. Retorne APENAS o código traduzido e uma breve explicação separada por "|||". 
-Exemplo de formato esperado: SELECT * FROM table ||| O comando SELECT busca tudo.
-Se não houver explicação, retorne apenas o código.
-2. Seja preciso e otimizado.
-`;
+Regras Inflexíveis:
+1. "category" deve ser uma dessas: "Busca e Referência", "Lógica", "Matemática e Estatística", "Texto", "Data e Hora", "Outros".
+2. "equivalents" OBRIGATORIAMENTE deve ser um array com exatos 5 objetos, um para CADA linguagem: "Excel", "DAX", "Power Fx", "SQL", "Python". Nenhuma a mais, nenhuma a menos.
+3. Em "visualization", crie uma tabela em formato de "headers" (array de nomes de coluna) e "rows" (array de matrizes com os valores das linhas). E elabore até 4 "steps" (passos explicativos de como a função opera nos dados simulados).`;
 
   try {
     const response = await ai.models.generateContent({
       model: MODEL,
       contents: prompt,
+      config: {
+        responseMimeType: "application/json",
+        responseSchema: {
+          type: "OBJECT",
+          properties: {
+            name: { type: "STRING", description: "Nome curto (ex: Divisão Certa, Contagem Única)" },
+            category: { type: "STRING" },
+            description: { type: "STRING", description: "Explicação em até 2 frases" },
+            equivalents: {
+              type: "ARRAY",
+              items: {
+                type: "OBJECT",
+                properties: {
+                  language: { type: "STRING", description: "Excel, DAX, Power Fx, SQL, ou Python" },
+                  syntax: { type: "STRING" },
+                  description: { type: "STRING" },
+                  example: { type: "STRING" }
+                },
+                required: ["language", "syntax", "description", "example"]
+              }
+            },
+            visualization: {
+              type: "OBJECT",
+              properties: {
+                headers: { type: "ARRAY", items: { type: "STRING" } },
+                rows: { type: "ARRAY", items: { type: "ARRAY", items: { type: "STRING" } } },
+                steps: {
+                  type: "ARRAY",
+                  items: {
+                    type: "OBJECT",
+                    properties: {
+                      label: { type: "STRING" },
+                      description: { type: "STRING" },
+                      highlightRows: { type: "ARRAY", items: { type: "INTEGER" } },
+                      highlightCols: { type: "ARRAY", items: { type: "INTEGER" } },
+                      highlightCells: { type: "ARRAY", items: { type: "ARRAY", items: { type: "INTEGER" } } },
+                      dimRows: { type: "ARRAY", items: { type: "INTEGER" } },
+                      resultValue: { type: "STRING" }
+                    },
+                    required: ["label", "description"]
+                  }
+                }
+              },
+              required: ["headers", "rows", "steps"]
+            }
+          },
+          required: ["name", "category", "description", "equivalents", "visualization"]
+        }
+      }
     });
 
     const text = response.text || '';
-
-    // Processa a saída para separar código da explicação
-    const parts = text.split('|||').map(s => s.trim());
-    const translatedCode = parts[0] ? parts[0].replace(/```\w*\n/g, '').replace(/```/g, '').trim() : '';
-    const explanation = parts[1] || null;
-
-    return {
-      translatedCode,
-      explanation
-    };
+    const generatedData = JSON.parse(text);
+    return generatedData;
   } catch (error) {
-    console.error('Erro ao chamar o Gemini:', error);
-    throw error; // repassa o erro original para o route.ts analisar
+    console.error('Erro ao gerar via Gemini:', error);
+    throw error;
   }
 }

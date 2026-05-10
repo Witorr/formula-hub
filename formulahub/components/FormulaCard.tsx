@@ -63,7 +63,7 @@ export function FormulaCard({
 }) {
   const [activeLang, setActiveLang] = useState<Language>('Excel');
   const languages = Object.keys(operation.equivalents) as Language[];
-  const hasViz = !!visualizations[operation.id];
+  const hasViz = !!visualizations[operation.id] || !!operation.visualization;
 
   return (
     <div

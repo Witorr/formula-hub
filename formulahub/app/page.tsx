@@ -248,12 +248,30 @@ export default function Home() {
   const [vizState, setVizState] = useState<{ operation: Operation; language: Language } | null>(null);
   const [navScrolled, setNavScrolled] = useState(false);
   const [isSpotlightOpen, setIsSpotlightOpen] = useState(false);
+  const [dynamicOperations, setDynamicOperations] = useState<Operation[]>([]);
+
+  // Carrega do banco no carregamento da página
+  useEffect(() => {
+    fetch('/api/operations')
+      .then(res => res.json())
+      .then(res => {
+        if (res.success && res.data) {
+          setDynamicOperations(res.data);
+        }
+      })
+      .catch(err => console.error('Falha ao obter operações dinamicas:', err));
+  }, []);
+
+  const combinedOperations = useMemo(() => {
+    // Unindo operações estáticas com as geradas por IA, omitindo possíveis id duplicados
+    return [...operations, ...dynamicOperations];
+  }, [dynamicOperations]);
 
   const formulasSectionRef = useRef<HTMLElement>(null);
 
   const filtered = useMemo(() => {
     const q = search.toLowerCase();
-    return operations.filter((op) => {
+    return combinedOperations.filter((op) => {
       const matchesSearch =
         !q ||
         op.name.toLowerCase().includes(q) ||
@@ -264,7 +282,7 @@ export default function Home() {
       const matchesCategory = !activeCategory || op.category === activeCategory;
       return matchesSearch && matchesCategory;
     });
-  }, [search, activeCategory]);
+  }, [search, activeCategory, combinedOperations]);
 
   // Detect scroll for navbar background
   useEffect(() => {
@@ -837,7 +855,11 @@ export default function Home() {
             <p className="text-zinc-400 text-sm sm:text-base mb-10">Não encontramos essa fórmula no catálogo estático, mas nossa Inteligência Artificial pode gerar ela agora mesmo para você.</p>
             
             <div className="text-left mt-6">
-              <AITranslator initialSearch={search} />
+              <AITranslator 
+                 initialSearch={search}
+                 onVisualize={(op, lang) => setVizState({ operation: op, language: lang })}
+                 onGenerate={(newOp) => setDynamicOperations(prev => [newOp, ...prev])}
+              />
             </div>
 
             <div className="mt-8">
