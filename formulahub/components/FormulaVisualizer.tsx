@@ -242,37 +242,39 @@ function StepPanel({
   const total = viz.steps.length;
 
   return (
-    <div className="flex flex-col h-full gap-6 p-6">
+    <div className="flex flex-col gap-5 p-5">
       {/* Passo atual */}
       <div>
-        <div className="flex items-center gap-2 mb-3">
-          <span className={`text-xs font-semibold px-2 py-0.5 rounded-full bg-zinc-800 ${cfg.accentText}`}>
+        <div className="flex flex-wrap items-center gap-2 mb-3">
+          <span className={`text-xs font-semibold px-2 py-0.5 rounded-full bg-zinc-800 shrink-0 ${cfg.accentText}`}>
             Passo {stepIndex + 1} / {total}
           </span>
-          <span className="text-xs font-semibold text-zinc-300">{step.label}</span>
+          <span className="text-xs font-semibold text-zinc-300 break-words">{step.label}</span>
         </div>
         <p
           key={stepIndex}
-          className="text-sm text-zinc-400 leading-relaxed"
+          className="text-sm text-zinc-400 leading-relaxed break-words overflow-y-auto max-h-40"
           style={{ animation: 'fadeIn 0.4s ease' }}
         >
           {step.description}
         </p>
       </div>
 
-      {/* Indicadores de passo */}
-      <div className="flex items-center gap-2">
-        {viz.steps.map((_, i) => (
-          <button
-            key={i}
-            onClick={() => onStep(i)}
-            className={`
-              h-1.5 rounded-full transition-all duration-300
-              ${i === stepIndex ? `w-6 ${cfg.accentText.replace('text-', 'bg-')}` : 'w-1.5 bg-zinc-700 hover:bg-zinc-500'}
-            `}
-          />
-        ))}
-        <div className="ml-auto flex items-center gap-2">
+      {/* Indicadores de passo + controles */}
+      <div className="flex flex-wrap items-center gap-2">
+        <div className="flex items-center gap-2">
+          {viz.steps.map((_, i) => (
+            <button
+              key={i}
+              onClick={() => onStep(i)}
+              className={`
+                h-1.5 rounded-full transition-all duration-300
+                ${i === stepIndex ? `w-6 ${cfg.accentText.replace('text-', 'bg-')}` : 'w-1.5 bg-zinc-700 hover:bg-zinc-500'}
+              `}
+            />
+          ))}
+        </div>
+        <div className="ml-auto flex items-center gap-2 shrink-0">
           {/* Voltar */}
           <button
             onClick={() => onStep(Math.max(0, stepIndex - 1))}
@@ -318,7 +320,7 @@ function StepPanel({
       {/* Sobre a operação */}
       <div className="space-y-1">
         <p className="text-xs text-zinc-600 uppercase tracking-wider">O que faz</p>
-        <p className="text-xs text-zinc-500 leading-relaxed">
+        <p className="text-xs text-zinc-500 leading-relaxed break-words">
           {step.resultValue !== undefined
             ? `Esta fórmula retorna o valor ${step.resultValue}.`
             : 'Prossiga pelos passos para ver o resultado final.'}
@@ -454,9 +456,9 @@ export function FormulaVisualizer({ operation, initialLanguage, onClose }: Formu
           </div>
 
           {/* Body */}
-          <div className="flex flex-1 min-h-0">
-            {/* Cena animada (esquerda, 60%) */}
-            <div className="flex-[3] p-4 min-h-0">
+          <div className="flex flex-col sm:flex-row flex-1 min-h-0 overflow-hidden">
+            {/* Cena animada (esquerda) */}
+            <div className="flex-1 min-w-0 p-4 min-h-0 overflow-hidden">
               <Scene
                 viz={viz}
                 stepIndex={stepIndex}
@@ -465,8 +467,8 @@ export function FormulaVisualizer({ operation, initialLanguage, onClose }: Formu
               />
             </div>
 
-            {/* Painel de descrição (direita, 40%) */}
-            <div className="flex-[2] border-l border-zinc-800 min-h-0 overflow-y-auto">
+            {/* Painel de descrição (direita — largura fixa para nunca colapsar) */}
+            <div className="w-full sm:w-72 shrink-0 border-t sm:border-t-0 sm:border-l border-zinc-800 overflow-y-auto">
               <StepPanel
                 viz={viz}
                 stepIndex={stepIndex}

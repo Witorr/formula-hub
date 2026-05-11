@@ -44,7 +44,7 @@ function LanguagePanel({ operation, lang }: { operation: Operation; lang: Langua
           <p className="text-xs text-zinc-500 uppercase tracking-widest font-medium">Exemplo</p>
           <CopyButton text={formula.example} />
         </div>
-        <pre className="text-sm font-mono bg-zinc-950 rounded-xl p-4 text-zinc-300 whitespace-pre-wrap border border-zinc-800/60">
+        <pre className="text-sm font-mono bg-zinc-950 rounded-xl p-4 text-zinc-300 whitespace-pre-wrap break-all border border-zinc-800/60 overflow-x-auto">
           {formula.example}
         </pre>
       </div>
