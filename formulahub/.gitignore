@@ -6,4 +6,10 @@ coverage/
 .env*
 !.env.example
 
+# Editor / OS metadata
+.directory
+Thumbs.db
+.idea/
+.vscode/
+
 /generated/prisma
