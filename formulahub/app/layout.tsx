@@ -1,9 +1,22 @@
-import type { Metadata } from 'next';
+import type { Metadata, Viewport } from 'next';
 import './globals.css';
 
 export const metadata: Metadata = {
   title: 'FormulaHub — Seu Glossário de Fórmulas Ativas',
   description: 'Glossário comparativo de fórmulas entre Excel, DAX, Power Fx, SQL e Python. Encontre equivalências, compare sintaxes e visualize fórmulas em ação.',
+  icons: {
+    icon: [
+      { url: '/assets/favicon/favicon.ico', sizes: 'any' },
+      { url: '/assets/favicon/favicon-16x16.png', sizes: '16x16', type: 'image/png' },
+      { url: '/assets/favicon/favicon-32x32.png', sizes: '32x32', type: 'image/png' },
+    ],
+    apple: '/assets/favicon/apple-touch-icon.png',
+  },
+  manifest: '/assets/favicon/site.webmanifest',
+};
+
+export const viewport: Viewport = {
+  themeColor: '#8b5cf6',
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

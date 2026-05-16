@@ -7,12 +7,15 @@ export interface FormulaExample {
   example: string;
 }
 
+import { OperationViz } from '@/data/visualizations';
+
 export interface Operation {
   id: string;
   name: string;
   category: string;
   description: string;
   equivalents: Record<Language, FormulaExample>;
+  visualization?: OperationViz;
 }
 
 export const categories = [

@@ -1,0 +1,66 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Get a free hosted Postgres database in seconds: `npx create-db`
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model GeneratedOperation {
+  id          String   @id @default(cuid())
+  searchQuery String   @unique // The generic term the user typed
+  name        String
+  category    String
+  description String
+  llmProvider String
+
+  equivalents   GeneratedEquivalent[]
+  visualization GeneratedVisualization?
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model GeneratedEquivalent {
+  id           String @id @default(cuid())
+  language     String
+  syntax       String @db.Text
+  description  String @db.Text
+  example      String @db.Text
+
+  operationId  String
+  operation    GeneratedOperation @relation(fields: [operationId], references: [id], onDelete: Cascade)
+
+  @@unique([operationId, language])
+}
+
+model GeneratedVisualization {
+  id          String @id @default(cuid())
+  headers     Json   // Array of strings
+  rows        Json   // Array of array of string|number
+
+  operationId String @unique
+  operation   GeneratedOperation @relation(fields: [operationId], references: [id], onDelete: Cascade)
+
+  steps       GeneratedVizStep[]
+}
+
+model GeneratedVizStep {
+  id             String @id @default(cuid())
+  label          String
+  description    String @db.Text
+  highlightRows  Json?  // Array of numbers
+  highlightCols  Json?  // Array of numbers
+  highlightCells Json?  // Array of [row, col]
+  dimRows        Json?  // Array of numbers
+  resultValue    String? // Usually a string or number represented as string
+
+  visualizationId String
+  visualization   GeneratedVisualization @relation(fields: [visualizationId], references: [id], onDelete: Cascade)
+}
