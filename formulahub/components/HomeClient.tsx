@@ -187,13 +187,23 @@ function PreviewMockup() {
    Configuração de Categorias
    ═══════════════════════════════════════════════════════════════════════════════ */
 
-const CATEGORY_CONFIG: Record<string, { icon: string; lottie: string; desc: string; gradient: string; iconBg: string }> = {
+type CategoryConfig = {
+  icon: string;
+  lottie: string;
+  desc: string;
+  gradient: string;
+  iconBg: string;
+  iconScale?: number;
+};
+
+const CATEGORY_CONFIG: Record<string, CategoryConfig> = {
   'Busca e Referência': {
     icon: '🔍',
     lottie: '/assets/search.lottie',
     desc: 'PROCV, Lookup e mais',
     gradient: 'hover:border-violet-500/40',
     iconBg: 'bg-violet-500/10',
+    iconScale: 1,
   },
   'Lógica': {
     icon: '⚡',
@@ -201,6 +211,7 @@ const CATEGORY_CONFIG: Record<string, { icon: string; lottie: string; desc: stri
     desc: 'SE, IF, CASE e mais',
     gradient: 'hover:border-amber-500/40',
     iconBg: 'bg-amber-500/10',
+    iconScale: 1,
   },
   'Matemática e Estatística': {
     icon: '∑',
@@ -208,6 +219,7 @@ const CATEGORY_CONFIG: Record<string, { icon: string; lottie: string; desc: stri
     desc: 'SOMASE, CONT.SE e mais',
     gradient: 'hover:border-emerald-500/40',
     iconBg: 'bg-emerald-500/10',
+    iconScale: 1,
   },
   'Texto': {
     icon: 'Aa',
@@ -215,6 +227,7 @@ const CATEGORY_CONFIG: Record<string, { icon: string; lottie: string; desc: stri
     desc: 'CONCATENAR, ESQUERDA e mais',
     gradient: 'hover:border-sky-500/40',
     iconBg: 'bg-sky-500/10',
+    iconScale: 1,
   },
   'Data e Hora': {
     icon: '📅',
@@ -222,20 +235,23 @@ const CATEGORY_CONFIG: Record<string, { icon: string; lottie: string; desc: stri
     desc: 'HOJE, TODAY e mais',
     gradient: 'hover:border-rose-500/40',
     iconBg: 'bg-rose-500/10',
+    iconScale: 1,
   },
 };
 
-/* ═══════════════════════════════════════════════════════════════════════════════
-   Ícones de categorias para o filtro (mantido do original)
-   ═══════════════════════════════════════════════════════════════════════════════ */
-
-const CATEGORY_ICONS: Record<string, string> = {
-  'Busca e Referência': '/assets/search.lottie',
-  'Lógica': '/assets/logic.lottie',
-  'Matemática e Estatística': '/assets/math.lottie',
-  'Texto': '/assets/text.lottie',
-  'Data e Hora': '/assets/calendar.lottie',
+const DEFAULT_CATEGORY_CONFIG: CategoryConfig = {
+  icon: '📁',
+  lottie: '/assets/Default.lottie',
+  desc: 'Fórmulas diversas',
+  gradient: 'hover:border-zinc-500/40',
+  iconBg: 'bg-zinc-500/10',
+  iconScale: 2,
 };
+
+function getCategoryConfig(cat: string): CategoryConfig {
+  return CATEGORY_CONFIG[cat] ?? DEFAULT_CATEGORY_CONFIG;
+}
+
 
 /* ═══════════════════════════════════════════════════════════════════════════════
    Página Principal (Client Component)
@@ -253,9 +269,14 @@ export function HomeClient({ initialDynamicOperations }: { initialDynamicOperati
   const [spotlightGenerateError, setSpotlightGenerateError] = useState<string | null>(null);
 
   const combinedOperations = useMemo(() => {
-    // Unindo operações estáticas com as geradas por IA, omitindo possíveis id duplicados
     return [...operations, ...dynamicOperations];
   }, [dynamicOperations]);
+
+  const allCategories = useMemo(() => {
+    const seen = new Set<string>(categories);
+    combinedOperations.forEach(op => seen.add(op.category));
+    return Array.from(seen);
+  }, [combinedOperations]);
 
   const formulasSectionRef = useRef<HTMLElement>(null);
 
@@ -408,7 +429,7 @@ export function HomeClient({ initialDynamicOperations }: { initialDynamicOperati
                     <div className="px-2.5 py-2 text-xs font-semibold text-zinc-500 uppercase tracking-wider mb-0.5">
                       Explorar por
                     </div>
-                    {categories.map(cat => (
+                    {allCategories.map(cat => (
                       <button
                         key={cat}
                         onClick={() => handleCategoryClick(cat)}
@@ -708,10 +729,10 @@ export function HomeClient({ initialDynamicOperations }: { initialDynamicOperati
         </div>
 
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 sm:gap-4 lg:gap-5">
-          {categories.map((cat) => {
-            const cfg = CATEGORY_CONFIG[cat];
+          {allCategories.map((cat) => {
+            const cfg = getCategoryConfig(cat);
             const isActive = activeCategory === cat;
-            const count = operations.filter((op) => op.category === cat).length;
+            const count = combinedOperations.filter((op) => op.category === cat).length;
             return (
               <button
                 key={cat}
@@ -722,10 +743,16 @@ export function HomeClient({ initialDynamicOperations }: { initialDynamicOperati
                   }`}
               >
                 <div
-                  className={`w-14 h-14 sm:w-16 sm:h-16 lg:w-18 lg:h-18 rounded-2xl flex items-center justify-center transition-transform duration-300 group-hover:scale-110 ${cfg.iconBg}`}
+                  className={`w-14 h-14 sm:w-16 sm:h-16 lg:w-18 lg:h-18 rounded-2xl overflow-hidden flex items-center justify-center transition-transform duration-300 group-hover:scale-110 ${cfg.iconBg}`}
                 >
-                  <div className="w-8 h-8 sm:w-10 sm:h-10 lg:w-12 lg:h-12">
-                    <DotLottieReact src={cfg.lottie} loop autoplay />
+                  <div
+                    className="w-10 h-10 sm:w-12 sm:h-12 lg:w-14 lg:h-14 flex items-center justify-center"
+                    style={{ transform: `scale(${cfg.iconScale ?? 1})` }}
+                  >
+                    {cfg.lottie
+                      ? <DotLottieReact src={cfg.lottie} loop autoplay />
+                      : <span className="text-2xl">{cfg.icon}</span>
+                    }
                   </div>
                 </div>
                 <div className="text-center">
@@ -828,21 +855,34 @@ export function HomeClient({ initialDynamicOperations }: { initialDynamicOperati
             >
               Todas
             </button>
-            {categories.map((cat) => (
-              <button
-                key={cat}
-                onClick={() => setActiveCategory(activeCategory === cat ? null : cat)}
-                className={`flex items-center gap-2 text-xs sm:text-sm px-3.5 sm:px-4 py-2 sm:py-2.5 rounded-xl border font-medium transition-all duration-200 ${activeCategory === cat
-                  ? 'bg-white text-zinc-900 border-white shadow-md'
-                  : 'border-zinc-800 text-zinc-400 hover:border-zinc-600 hover:text-zinc-200 bg-zinc-900/50'
-                  }`}
-              >
-                <span className="opacity-70 w-5 h-5 flex items-center justify-center">
-                  <DotLottieReact src={CATEGORY_ICONS[cat]} loop autoplay />
-                </span>
-                {cat}
-              </button>
-            ))}
+            {allCategories.map((cat) => {
+              const cfg = getCategoryConfig(cat);
+              return (
+                <button
+                  key={cat}
+                  onClick={() => setActiveCategory(activeCategory === cat ? null : cat)}
+                  className={`flex items-center gap-2 text-xs sm:text-sm px-3.5 sm:px-4 py-2 sm:py-2.5 rounded-xl border font-medium transition-all duration-200 ${activeCategory === cat
+                    ? 'bg-white text-zinc-900 border-white shadow-md'
+                    : 'border-zinc-800 text-zinc-400 hover:border-zinc-600 hover:text-zinc-200 bg-zinc-900/50'
+                    }`}
+                >
+                  <span className="opacity-70 w-5 h-5 flex items-center justify-center overflow-hidden">
+                    {cfg.lottie
+                      ? (
+                        <span
+                          className="w-full h-full flex items-center justify-center"
+                          style={{ transform: `scale(${cfg.iconScale ?? 1})` }}
+                        >
+                          <DotLottieReact src={cfg.lottie} loop autoplay />
+                        </span>
+                      )
+                      : <span>{cfg.icon}</span>
+                    }
+                  </span>
+                  {cat}
+                </button>
+              );
+            })}
           </div>
         </div>
 
