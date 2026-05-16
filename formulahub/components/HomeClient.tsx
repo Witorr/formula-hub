@@ -98,7 +98,24 @@ function MatrixRain() {
    Preview Mockup — card do PROCV estilizado como "screenshot do produto"
    ═══════════════════════════════════════════════════════════════════════════════ */
 
-function PreviewMockup() {
+const PREVIEW_LANG_STYLE: Record<Language, { text: string; border: string }> = {
+  Excel:      { text: 'text-emerald-400', border: 'border-emerald-400' },
+  DAX:        { text: 'text-yellow-400',  border: 'border-yellow-400'  },
+  'Power Fx': { text: 'text-purple-400',  border: 'border-purple-400'  },
+  SQL:        { text: 'text-blue-400',    border: 'border-blue-400'    },
+  Python:     { text: 'text-sky-400',     border: 'border-sky-400'     },
+};
+
+function PreviewMockup({ onVisualize }: { onVisualize?: (op: Operation, lang: Language) => void }) {
+  const previewOp = useMemo(
+    () => operations.find((op) => op.id === 'lookup') ?? operations[0],
+    [],
+  );
+  const languages = Object.keys(previewOp.equivalents) as Language[];
+  const [activeLang, setActiveLang] = useState<Language>('Excel');
+  const activeFormula = previewOp.equivalents[activeLang];
+  const activeStyle = PREVIEW_LANG_STYLE[activeLang];
+
   return (
     <div
       className="relative rounded-2xl lg:rounded-3xl overflow-hidden border border-violet-500/30"
@@ -112,7 +129,7 @@ function PreviewMockup() {
           <span className="w-3.5 h-3.5 rounded-full bg-green-500/70" />
         </div>
         <div className="flex-1 text-center">
-          <span className="text-xs sm:text-sm text-zinc-500 font-medium">FormulaHub — Busca Vertical (PROCV)</span>
+          <span className="text-xs sm:text-sm text-zinc-500 font-medium">FormulaHub — {previewOp.name}</span>
         </div>
       </div>
 
@@ -121,33 +138,30 @@ function PreviewMockup() {
         {/* Card header */}
         <div className="flex flex-col sm:flex-row items-start justify-between gap-3 mb-5">
           <div>
-            <h3 className="font-bold text-white text-lg sm:text-xl lg:text-2xl">Busca Vertical (PROCV)</h3>
+            <h3 className="font-bold text-white text-lg sm:text-xl lg:text-2xl">{previewOp.name}</h3>
             <p className="text-sm sm:text-base text-zinc-400 mt-1.5 leading-relaxed">
-              Busca um valor em uma coluna e retorna um valor correspondente na mesma linha de outra coluna.
+              {previewOp.description}
             </p>
           </div>
           <span className="shrink-0 text-xs sm:text-sm px-3 py-1.5 rounded-full bg-violet-500/15 text-violet-300 border border-violet-500/20 font-medium">
-            Busca e Referência
+            {previewOp.category}
           </span>
         </div>
 
         {/* Language tabs */}
         <div className="flex border-b border-zinc-800 mb-5">
-          {(['Excel', 'DAX', 'Power Fx', 'SQL', 'Python'] as const).map((lang, i) => {
-            const colors = [
-              'text-emerald-400 border-emerald-400',
-              'text-yellow-400',
-              'text-purple-400',
-              'text-blue-400',
-              'text-sky-400',
-            ];
+          {languages.map((lang) => {
+            const style = PREVIEW_LANG_STYLE[lang];
+            const isActive = activeLang === lang;
             return (
               <button
                 key={lang}
-                className={`flex-1 text-xs sm:text-sm py-3 font-semibold transition-colors ${i === 0
-                  ? `${colors[i]} border-b-2 -mb-px bg-zinc-800/40`
-                  : 'text-zinc-500'
-                  }`}
+                onClick={() => setActiveLang(lang)}
+                className={`flex-1 text-xs sm:text-sm py-3 font-semibold transition-colors whitespace-nowrap ${
+                  isActive
+                    ? `${style.text} border-b-2 ${style.border} -mb-px bg-zinc-800/40`
+                    : 'text-zinc-500 hover:text-zinc-300'
+                }`}
               >
                 {lang}
               </button>
@@ -159,20 +173,23 @@ function PreviewMockup() {
         <div className="space-y-4">
           <div>
             <p className="text-xs sm:text-sm text-zinc-500 mb-1.5 uppercase tracking-widest font-medium">Sintaxe</p>
-            <code className="text-sm sm:text-base font-mono text-emerald-400 block leading-relaxed">
-              PROCV(valor_procurado, matriz_tabela, num_indice_coluna, [procurar_intervalo])
+            <code className={`text-sm sm:text-base font-mono ${activeStyle.text} block leading-relaxed break-all`}>
+              {activeFormula.syntax}
             </code>
           </div>
           <div>
             <p className="text-xs sm:text-sm text-zinc-500 mb-2 uppercase tracking-widest font-medium">Exemplo</p>
-            <pre className="text-sm sm:text-base font-mono bg-zinc-950 rounded-xl p-4 sm:p-5 text-zinc-300 border border-zinc-800/60">
-              {`=PROCV("A123", Clientes!A:D, 2, FALSO)`}
+            <pre className="text-sm sm:text-base font-mono bg-zinc-950 rounded-xl p-4 sm:p-5 text-zinc-300 border border-zinc-800/60 whitespace-pre-wrap break-all overflow-x-auto">
+              {activeFormula.example}
             </pre>
           </div>
         </div>
 
         {/* CTA inside preview */}
-        <button className="mt-5 w-full flex items-center justify-center gap-2.5 text-sm sm:text-base font-semibold px-4 py-3 sm:py-3.5 rounded-xl bg-gradient-to-r from-violet-600 to-indigo-600 text-white shadow-md shadow-violet-900/30 hover:from-violet-500 hover:to-indigo-500 transition-all duration-300">
+        <button
+          onClick={() => onVisualize?.(previewOp, activeLang)}
+          className="mt-5 w-full flex items-center justify-center gap-2.5 text-sm sm:text-base font-semibold px-4 py-3 sm:py-3.5 rounded-xl bg-gradient-to-r from-violet-600 to-indigo-600 text-white shadow-md shadow-violet-900/30 hover:from-violet-500 hover:to-indigo-500 transition-all duration-300"
+        >
           <svg className="w-4 h-4 sm:w-5 sm:h-5" fill="currentColor" viewBox="0 0 24 24">
             <path d="M8 5v14l11-7z" />
           </svg>
@@ -267,6 +284,8 @@ export function HomeClient({ initialDynamicOperations }: { initialDynamicOperati
   const [dynamicOperations, setDynamicOperations] = useState<Operation[]>(initialDynamicOperations);
   const [spotlightGenerating, setSpotlightGenerating] = useState(false);
   const [spotlightGenerateError, setSpotlightGenerateError] = useState<string | null>(null);
+  const [heroGenerating, setHeroGenerating] = useState(false);
+  const [heroGenerateError, setHeroGenerateError] = useState<string | null>(null);
 
   const combinedOperations = useMemo(() => {
     return [...operations, ...dynamicOperations];
@@ -363,6 +382,39 @@ export function HomeClient({ initialDynamicOperations }: { initialDynamicOperati
       setSpotlightGenerating(false);
     }
   }, [search, spotlightGenerating]);
+
+  const handleHeroGenerate = useCallback(async () => {
+    if (!search.trim() || heroGenerating) return;
+    setHeroGenerating(true);
+    setHeroGenerateError(null);
+    try {
+      const res = await fetch('/api/generate-operation', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ searchQuery: search }),
+      });
+      const json = await res.json();
+      if (!res.ok || json.error) throw new Error(json.error || 'Erro desconhecido');
+      const dbOp = json.data;
+      const mappedOp: Operation = {
+        id: dbOp.id,
+        name: dbOp.name,
+        category: dbOp.category,
+        description: dbOp.description,
+        equivalents: dbOp.equivalents.reduce((acc: any, eq: any) => {
+          acc[eq.language] = { language: eq.language, syntax: eq.syntax, description: eq.description, example: eq.example };
+          return acc;
+        }, {}),
+        visualization: dbOp.visualization,
+      };
+      setDynamicOperations(prev => [mappedOp, ...prev]);
+      setTimeout(() => formulasSectionRef.current?.scrollIntoView({ behavior: 'smooth' }), 100);
+    } catch (err: any) {
+      setHeroGenerateError(err.message);
+    } finally {
+      setHeroGenerating(false);
+    }
+  }, [search, heroGenerating]);
 
   const handleCategoryClick = useCallback((cat: string) => {
     setActiveCategory((prev) => (prev === cat ? null : cat));
@@ -652,17 +704,56 @@ export function HomeClient({ initialDynamicOperations }: { initialDynamicOperati
               value={search}
               onChange={(e) => {
                 setSearch(e.target.value);
-                if (e.target.value) scrollToFormulas();
+                if (heroGenerateError) setHeroGenerateError(null);
+              }}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') {
+                  if (search.trim() && filtered.length === 0) {
+                    handleHeroGenerate();
+                  } else {
+                    scrollToFormulas();
+                  }
+                }
               }}
               className="w-full bg-zinc-900/60 border border-zinc-700/40 rounded-2xl pl-14 sm:pl-16 pr-28 sm:pr-40 py-4 sm:py-5 text-base sm:text-lg text-white placeholder-zinc-500 outline-none focus:border-violet-500/50 focus:ring-2 focus:ring-violet-500/15 transition-all duration-300 backdrop-blur-md"
             />
-            <button
-              onClick={scrollToFormulas}
-              className="absolute right-2 sm:right-3 top-1/2 -translate-y-1/2 px-5 sm:px-8 py-2.5 sm:py-3 text-sm sm:text-base font-semibold rounded-xl bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-500 hover:to-indigo-500 text-white transition-all duration-300 shadow-md shadow-violet-900/20"
-            >
-              Buscar
-            </button>
+            {(() => {
+              const noResults = search.trim().length > 0 && filtered.length === 0;
+              return (
+                <button
+                  onClick={noResults ? handleHeroGenerate : scrollToFormulas}
+                  disabled={heroGenerating}
+                  className={`absolute right-2 sm:right-3 top-1/2 -translate-y-1/2 px-5 sm:px-8 py-2.5 sm:py-3 text-sm sm:text-base font-semibold rounded-xl text-white transition-all duration-300 shadow-md disabled:opacity-60 disabled:cursor-not-allowed flex items-center gap-2 ${
+                    noResults
+                      ? 'bg-gradient-to-r from-fuchsia-600 to-violet-600 hover:from-fuchsia-500 hover:to-violet-500 shadow-fuchsia-900/30'
+                      : 'bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-500 hover:to-indigo-500 shadow-violet-900/20'
+                  }`}
+                >
+                  {heroGenerating ? (
+                    <>
+                      <svg className="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z" />
+                      </svg>
+                      <span>Gerando...</span>
+                    </>
+                  ) : noResults ? (
+                    <>
+                      <span>✨</span>
+                      <span>Gerar</span>
+                    </>
+                  ) : (
+                    <span>Buscar</span>
+                  )}
+                </button>
+              );
+            })()}
           </div>
+          {heroGenerateError && (
+            <p className="text-sm text-red-400 -mt-6 mb-10 sm:mb-14 text-center">
+              {heroGenerateError}
+            </p>
+          )}
 
           {/* Stats */}
           <div className="flex flex-wrap items-center justify-center gap-6 sm:gap-8 md:gap-12 text-sm sm:text-base text-zinc-500">
@@ -706,7 +797,7 @@ export function HomeClient({ initialDynamicOperations }: { initialDynamicOperati
             animation: 'slideUp 1s cubic-bezier(0.16, 1, 0.3, 1) 0.3s both',
           }}
         >
-          <PreviewMockup />
+          <PreviewMockup onVisualize={(op, lang) => setVizState({ operation: op, language: lang })} />
         </div>
         {/* Glow reflection */}
         <div className="absolute -bottom-8 left-1/2 -translate-x-1/2 w-3/4 h-32 bg-violet-600/10 blur-3xl rounded-full pointer-events-none" />
