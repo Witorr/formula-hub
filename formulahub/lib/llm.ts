@@ -2,6 +2,14 @@ import { GoogleGenAI } from '@google/genai';
 
 const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY! });
 const MODEL = 'gemini-2.5-flash';
+const LLM_TIMEOUT_MS = Number(process.env.LLM_TIMEOUT_MS) || 30_000;
+
+export class LlmTimeoutError extends Error {
+  constructor(timeoutMs: number) {
+    super(`generateDynamicFormula excedeu o tempo limite de ${timeoutMs}ms`);
+    this.name = 'LlmTimeoutError';
+  }
+}
 
 /**
  * O input do usuário é entregue ao modelo entre delimitadores fortes (`<<<USER_QUERY>>>`)
@@ -26,10 +34,16 @@ REGRAS DE CONTEÚDO:
 export async function generateDynamicFormula(searchQuery: string) {
   const userMessage = `<<<USER_QUERY>>>\n${searchQuery}\n<<<END_USER_QUERY>>>`;
 
-  const response = await ai.models.generateContent({
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), LLM_TIMEOUT_MS);
+
+  let response;
+  try {
+    response = await ai.models.generateContent({
     model: MODEL,
     contents: [{ role: 'user', parts: [{ text: userMessage }] }],
     config: {
+      abortSignal: controller.signal,
       systemInstruction: SYSTEM_INSTRUCTION,
       responseMimeType: 'application/json',
       responseSchema: {
@@ -79,7 +93,15 @@ export async function generateDynamicFormula(searchQuery: string) {
         required: ['name', 'category', 'description', 'equivalents', 'visualization'],
       },
     },
-  });
+    });
+  } catch (err: any) {
+    if (controller.signal.aborted) {
+      throw new LlmTimeoutError(LLM_TIMEOUT_MS);
+    }
+    throw err;
+  } finally {
+    clearTimeout(timeout);
+  }
 
   const text = response.text || '';
   return JSON.parse(text);

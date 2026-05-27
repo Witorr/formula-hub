@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
-import { generateDynamicFormula } from '@/lib/llm';
+import { generateDynamicFormula, LlmTimeoutError } from '@/lib/llm';
 import {
   getClientIp,
   isOriginAllowed,
@@ -152,6 +152,13 @@ export async function POST(req: Request) {
     return NextResponse.json({ success: true, data: newOp, source: 'llm' });
   } catch (error: any) {
     console.error('Erro na rota /api/generate-operation:', error);
+
+    if (error instanceof LlmTimeoutError) {
+      return NextResponse.json(
+        { error: 'A geração demorou demais. Tente novamente.' },
+        { status: 504 },
+      );
+    }
 
     const status = error?.status ?? error?.cause?.status ?? 0;
     const msg = error?.message ?? '';

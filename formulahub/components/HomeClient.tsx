@@ -288,7 +288,12 @@ export function HomeClient({ initialDynamicOperations }: { initialDynamicOperati
   const [heroGenerateError, setHeroGenerateError] = useState<string | null>(null);
 
   const combinedOperations = useMemo(() => {
-    return [...operations, ...dynamicOperations];
+    const byName = new Map<string, Operation>();
+    for (const op of [...operations, ...dynamicOperations]) {
+      const key = op.name.toLowerCase();
+      if (!byName.has(key)) byName.set(key, op);
+    }
+    return Array.from(byName.values());
   }, [dynamicOperations]);
 
   const allCategories = useMemo(() => {
@@ -1163,7 +1168,7 @@ export function HomeClient({ initialDynamicOperations }: { initialDynamicOperati
                   </div>
                   {filtered.map(op => (
                     <button
-                      key={op.name}
+                      key={op.id}
                       onClick={() => {
                         setSearch(op.name);
                         setActiveCategory(null);
