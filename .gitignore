@@ -1,0 +1,3 @@
+# Ignore Antigravity agent configuration and states
+.agents/
+skills-lock.json
