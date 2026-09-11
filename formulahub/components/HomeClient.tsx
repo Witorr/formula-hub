@@ -265,6 +265,9 @@ const DEFAULT_CATEGORY_CONFIG: CategoryConfig = {
   iconScale: 2,
 };
 
+const FORMULAS_PER_PAGE = 12;
+const HERO_TYPING_WORDS = ['SEU', 'MEU', 'NOSSO'];
+
 function getCategoryConfig(cat: string): CategoryConfig {
   return CATEGORY_CONFIG[cat] ?? DEFAULT_CATEGORY_CONFIG;
 }
@@ -286,6 +289,8 @@ export function HomeClient({ initialDynamicOperations }: { initialDynamicOperati
   const [spotlightGenerateError, setSpotlightGenerateError] = useState<string | null>(null);
   const [heroGenerating, setHeroGenerating] = useState(false);
   const [heroGenerateError, setHeroGenerateError] = useState<string | null>(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [typedHeroWord, setTypedHeroWord] = useState('');
 
   const combinedOperations = useMemo(() => {
     return [...operations, ...dynamicOperations];
@@ -313,6 +318,27 @@ export function HomeClient({ initialDynamicOperations }: { initialDynamicOperati
       return matchesSearch && matchesCategory;
     });
   }, [search, activeCategory, combinedOperations]);
+
+  const totalPages = Math.ceil(filtered.length / FORMULAS_PER_PAGE);
+  const paginatedOperations = useMemo(() => {
+    const start = (currentPage - 1) * FORMULAS_PER_PAGE;
+    return filtered.slice(start, start + FORMULAS_PER_PAGE);
+  }, [currentPage, filtered]);
+
+  const paginationItems = useMemo(() => {
+    if (totalPages <= 7) return Array.from({ length: totalPages }, (_, index) => index + 1);
+
+    const items: Array<number | 'ellipsis'> = [1];
+    if (currentPage > 4) items.push('ellipsis');
+
+    const start = Math.max(2, currentPage - 1);
+    const end = Math.min(totalPages - 1, currentPage + 1);
+    for (let page = start; page <= end; page++) items.push(page);
+
+    if (currentPage < totalPages - 3) items.push('ellipsis');
+    items.push(totalPages);
+    return items;
+  }, [currentPage, totalPages]);
 
   // Detect scroll for navbar background
   useEffect(() => {
@@ -347,6 +373,62 @@ export function HomeClient({ initialDynamicOperations }: { initialDynamicOperati
 
   const scrollToFormulas = useCallback(() => {
     formulasSectionRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, []);
+
+  const changePage = useCallback((page: number) => {
+    setCurrentPage(page);
+    formulasSectionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }, []);
+
+  // Uma nova busca, categoria ou fórmula sempre inicia pela primeira página.
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [search, activeCategory, combinedOperations]);
+
+  // Alterna a primeira palavra da headline com efeito de digitação e backspace.
+  useEffect(() => {
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      setTypedHeroWord(HERO_TYPING_WORDS[0]);
+      return;
+    }
+
+    let wordIndex = 0;
+    let characterIndex = 0;
+    let isDeleting = false;
+    let timer: ReturnType<typeof setTimeout>;
+
+    const animate = () => {
+      const word = HERO_TYPING_WORDS[wordIndex];
+
+      if (isDeleting) {
+        characterIndex -= 1;
+        setTypedHeroWord(word.slice(0, characterIndex));
+
+        if (characterIndex === 0) {
+          isDeleting = false;
+          wordIndex = (wordIndex + 1) % HERO_TYPING_WORDS.length;
+          timer = setTimeout(animate, 450);
+          return;
+        }
+
+        timer = setTimeout(animate, 115);
+        return;
+      }
+
+      characterIndex += 1;
+      setTypedHeroWord(word.slice(0, characterIndex));
+
+      if (characterIndex === word.length) {
+        isDeleting = true;
+        timer = setTimeout(animate, 1500);
+        return;
+      }
+
+      timer = setTimeout(animate, 175);
+    };
+
+    animate();
+    return () => clearTimeout(timer);
   }, []);
 
   const handleSpotlightGenerate = useCallback(async () => {
@@ -653,18 +735,26 @@ export function HomeClient({ initialDynamicOperations }: { initialDynamicOperati
 
           {/* Title */}
           <h1 className="text-4xl sm:text-6xl md:text-7xl lg:text-8xl 2xl:text-[6.5rem] font-black tracking-tight leading-[1.15] mb-6 sm:mb-8 overflow-visible">
-            Seu Glossário de{' '}
-            <br className="hidden sm:block" />
-            <span
-              className="inline-block bg-gradient-to-r from-violet-400 via-purple-300 to-sky-400 bg-clip-text text-transparent pt-2 pb-4 -mb-4 px-4 -mx-4"
-              style={{
-                backgroundSize: '200% 200%',
-                animation: 'gradient-shift 8s ease infinite',
-                fontFamily: "'Playfair Display', Georgia, serif",
-                fontStyle: 'italic',
-              }}
-            >
-              ƒórmulas ativas
+            <span className="sr-only">Seu Glossário de fórmulas ativas</span>
+            <span aria-hidden="true">
+              <span className="inline-flex items-baseline font-bold" style={{ fontFamily: "'Bricolage Grotesque', sans-serif" }}>
+                <span className="hero-typing-caret inline-block mr-[0.16em] bg-gradient-to-r from-violet-400 via-indigo-400 to-sky-400 bg-clip-text text-transparent">
+                  {typedHeroWord || '\u00A0'}
+                </span>
+                <span>Glossário de</span>
+              </span>
+              <br className="hidden sm:block" />
+              <span
+                className="inline-block bg-gradient-to-r from-violet-400 via-purple-300 to-sky-400 bg-clip-text text-transparent pt-2 pb-4 -mb-4 px-4 -mx-4"
+                style={{
+                  backgroundSize: '200% 200%',
+                  animation: 'gradient-shift 8s ease infinite',
+                  fontFamily: "'Playfair Display', Georgia, serif",
+                  fontStyle: 'italic',
+                }}
+              >
+                ƒórmulas ativas
+              </span>
             </span>
           </h1>
 
@@ -903,13 +993,14 @@ export function HomeClient({ initialDynamicOperations }: { initialDynamicOperati
 
         {/* Barra de busca secundária + filtros */}
         <div className="flex flex-col lg:flex-row gap-3 sm:gap-4 mb-6 sm:mb-10">
-          <div className="relative flex-1">
+          <div className="flex h-12 w-full lg:w-[21rem] lg:shrink-0 items-center gap-3 rounded-xl border border-zinc-800 bg-zinc-900 px-4 sm:px-5 transition-all duration-200 focus-within:border-violet-600/50 focus-within:ring-2 focus-within:ring-violet-600/15">
             <svg
-              className="absolute left-4 sm:left-5 top-1/2 -translate-y-1/2 w-4 h-4 sm:w-5 sm:h-5 text-zinc-500 pointer-events-none"
+              className="w-4 h-4 sm:w-5 sm:h-5 shrink-0 text-zinc-500"
               fill="none"
               viewBox="0 0 24 24"
               stroke="currentColor"
               strokeWidth={2}
+              aria-hidden="true"
             >
               <path
                 strokeLinecap="round"
@@ -923,12 +1014,12 @@ export function HomeClient({ initialDynamicOperations }: { initialDynamicOperati
               placeholder="Filtrar fórmulas..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="w-full bg-zinc-900 border border-zinc-800 rounded-xl pl-11 sm:pl-13 pr-5 py-3 sm:py-3.5 text-sm sm:text-base text-white placeholder-zinc-500 outline-none focus:border-violet-600/50 focus:ring-2 focus:ring-violet-600/15 transition-all duration-200"
+              className="min-w-0 flex-1 bg-transparent text-xs sm:text-sm text-white placeholder-zinc-500 outline-none"
             />
             {search && (
               <button
                 onClick={() => setSearch('')}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-500 hover:text-zinc-300 text-lg sm:text-xl leading-none transition-colors"
+                className="shrink-0 text-zinc-500 hover:text-zinc-300 text-lg sm:text-xl leading-none transition-colors"
               >
                 ×
               </button>
@@ -979,13 +1070,14 @@ export function HomeClient({ initialDynamicOperations }: { initialDynamicOperati
 
         {/* Grid */}
         {filtered.length > 0 ? (
+          <>
           <div
             className={`grid gap-4 sm:gap-5 lg:gap-6 ${compareMode
               ? 'grid-cols-1 md:grid-cols-2'
               : 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4'
               }`}
           >
-            {filtered.map((op, index) => (
+            {paginatedOperations.map((op, index) => (
               <div
                 key={op.id}
                 className="h-full"
@@ -1001,6 +1093,53 @@ export function HomeClient({ initialDynamicOperations }: { initialDynamicOperati
               </div>
             ))}
           </div>
+
+          {totalPages > 1 && (
+            <nav className="mt-10 sm:mt-12 flex items-center justify-center gap-1.5 sm:gap-2" aria-label="Paginação de fórmulas">
+              <button
+                type="button"
+                onClick={() => changePage(currentPage - 1)}
+                disabled={currentPage === 1}
+                aria-label="Página anterior"
+                className="w-10 h-10 sm:w-11 sm:h-11 inline-flex items-center justify-center rounded-full border border-zinc-700 text-zinc-300 transition-all hover:border-violet-400 hover:text-violet-300 disabled:cursor-not-allowed disabled:opacity-35 disabled:hover:border-zinc-700 disabled:hover:text-zinc-300"
+              >
+                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5} aria-hidden="true">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="m15 18-6-6 6-6" />
+                </svg>
+              </button>
+
+              {paginationItems.map((item, index) => item === 'ellipsis' ? (
+                <span key={`ellipsis-${index}`} className="w-8 sm:w-10 text-center text-zinc-600 select-none" aria-hidden="true">…</span>
+              ) : (
+                <button
+                  key={item}
+                  type="button"
+                  onClick={() => changePage(item)}
+                  aria-label={`Ir para a página ${item}`}
+                  aria-current={item === currentPage ? 'page' : undefined}
+                  className={`w-10 h-10 sm:w-11 sm:h-11 inline-flex items-center justify-center rounded-full border text-sm sm:text-base font-semibold transition-all ${item === currentPage
+                    ? 'bg-gradient-to-br from-violet-500 to-indigo-600 border-violet-400 text-white shadow-lg shadow-violet-900/40'
+                    : 'border-zinc-700 bg-zinc-900/60 text-zinc-300 hover:border-violet-400 hover:text-violet-300 hover:bg-violet-500/10'
+                    }`}
+                >
+                  {item}
+                </button>
+              ))}
+
+              <button
+                type="button"
+                onClick={() => changePage(currentPage + 1)}
+                disabled={currentPage === totalPages}
+                aria-label="Próxima página"
+                className="w-10 h-10 sm:w-11 sm:h-11 inline-flex items-center justify-center rounded-full border border-zinc-700 text-zinc-300 transition-all hover:border-violet-400 hover:text-violet-300 disabled:cursor-not-allowed disabled:opacity-35 disabled:hover:border-zinc-700 disabled:hover:text-zinc-300"
+              >
+                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5} aria-hidden="true">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="m9 18 6-6-6-6" />
+                </svg>
+              </button>
+            </nav>
+          )}
+          </>
         ) : (
           <div className="text-center py-20 sm:py-28 max-w-4xl mx-auto">
             <div className="w-20 h-20 sm:w-24 sm:h-24 mx-auto mb-6 rounded-2xl bg-zinc-900 border border-zinc-800 flex items-center justify-center">
@@ -1174,8 +1313,8 @@ export function HomeClient({ initialDynamicOperations }: { initialDynamicOperati
                     >
                       <div className="flex items-center gap-4">
                         <div className={`w-12 h-12 rounded-xl flex items-center justify-center shrink-0 ${CATEGORY_CONFIG[op.category]?.iconBg || 'bg-zinc-800'}`}>
-                           <div className="w-7 h-7">
-                              <span className="text-2xl">{CATEGORY_CONFIG[op.category]?.icon}</span>
+                           <div className="w-7 h-7 flex items-center justify-center leading-none">
+                              <span className="text-2xl leading-none">{CATEGORY_CONFIG[op.category]?.icon}</span>
                            </div>
                         </div>
                         <div>

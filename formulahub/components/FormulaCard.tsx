@@ -78,8 +78,8 @@ export function FormulaCard({
       {/* ── Header ── */}
       <div className="p-5 border-b border-zinc-800/80">
         <div className="flex items-start justify-between gap-3 mb-3">
-          <h3 className="font-bold text-white text-base leading-snug">{operation.name}</h3>
-          <span className="shrink-0 text-xs px-2.5 py-1 rounded-full bg-zinc-800 text-zinc-400 whitespace-nowrap font-medium">
+          <h3 className="flex-1 min-w-0 font-bold text-white text-base leading-snug">{operation.name}</h3>
+          <span className="shrink-0 text-[10px] px-2 py-1 rounded-full bg-zinc-800 text-zinc-400 whitespace-nowrap leading-snug font-medium">
             {operation.category}
           </span>
         </div>
