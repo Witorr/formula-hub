@@ -1,5 +1,4 @@
 'use client';
-
 import { useState } from 'react';
 import { Operation, Language, FormulaExample } from '@/data/formulas';
 import { FormulaCard } from './FormulaCard';

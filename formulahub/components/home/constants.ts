@@ -99,3 +99,4 @@ export const PREVIEW_LANG_STYLE: Record<Language, { text: string; border: string
 
 export const FORMULAS_PER_PAGE = 12;
 export const HERO_TYPING_WORDS = ['SEU', 'MEU', 'NOSSO'];
+

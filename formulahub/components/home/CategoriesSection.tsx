@@ -77,3 +77,4 @@ export function CategoriesSection({ allCategories, activeCategory, combinedOpera
     </section>
   );
 }
+

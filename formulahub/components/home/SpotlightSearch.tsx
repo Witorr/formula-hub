@@ -1,5 +1,4 @@
 'use client';
-
 /**
  * SpotlightSearch.tsx — Modal de busca estilo Command Palette (Ctrl+K).
  *
@@ -165,3 +164,4 @@ export function SpotlightSearch({
     </div>
   );
 }
+

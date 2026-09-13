@@ -1,5 +1,4 @@
 'use client';
-
 /**
  * PreviewMockup.tsx — Card estilizado "screenshot do produto".
  *
@@ -109,3 +108,4 @@ export function PreviewMockup({ onVisualize }: Props) {
     </div>
   );
 }
+
