@@ -66,7 +66,14 @@ export function HomeClient({ initialDynamicOperations }: { initialDynamicOperati
   const formulasSectionRef = useRef<HTMLElement | null>(null);
 
   // ── Dados derivados (memoizados) ─────────────────────────────────────────────
-  const combinedOperations = useMemo(() => [...operations, ...dynamicOperations], [dynamicOperations]);
+  const combinedOperations = useMemo(() => {
+    const byName = new Map<string, Operation>();
+    for (const op of [...operations, ...dynamicOperations]) {
+      const key = op.name.toLowerCase();
+      if (!byName.has(key)) byName.set(key, op);
+    }
+    return Array.from(byName.values());
+  }, [dynamicOperations]);
 
   const allCategories = useMemo(() => {
     const seen = new Set<string>(categories);
