@@ -116,7 +116,7 @@ export function SpotlightSearch({
               </div>
               {filtered.map((op) => (
                 <button
-                  key={op.name}
+                  key={op.id}
                   onClick={() => onSelectFormula(op.name)}
                   className="w-full text-left p-3 hover:bg-zinc-800/80 focus:bg-zinc-800/80 rounded-xl flex items-center justify-between group transition-colors outline-none border border-transparent hover:border-zinc-700/50"
                 >
