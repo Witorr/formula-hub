@@ -54,6 +54,22 @@ export function FormulasSection({
   onVisualize,
   onGenerate,
 }: Props) {
+  const categoryPills = [null, ...allCategories];
+
+  const getMobilePillSpan = (index: number) => {
+    const isLastUnpairedPill = categoryPills.length % 2 === 1 && index === categoryPills.length - 1;
+
+    if (index < 3) {
+      return isLastUnpairedPill
+        ? 'col-span-2 min-[390px]:col-span-2'
+        : 'col-span-1 min-[390px]:col-span-2';
+    }
+
+    return isLastUnpairedPill
+      ? 'col-span-2 min-[390px]:col-span-3'
+      : 'col-span-1 min-[390px]:col-span-3';
+  };
+
   return (
     <section
       id="formulas"
@@ -118,39 +134,44 @@ export function FormulasSection({
         </div>
 
         {/* Category pills */}
-        <div className="flex flex-wrap gap-2 sm:gap-2.5">
-          <button
-            onClick={() => setActiveCategory(null)}
-            className={`text-xs sm:text-sm px-3.5 sm:px-4 py-2 sm:py-2.5 rounded-xl border font-medium transition-all duration-200 ${
-              !activeCategory
-                ? 'bg-white text-zinc-900 border-white shadow-md'
-                : 'border-zinc-800 text-zinc-400 hover:border-zinc-600 hover:text-zinc-200 bg-zinc-900/50'
-            }`}
-          >
-            Todas
-          </button>
-          {allCategories.map((cat) => {
+        <div className="grid grid-cols-2 min-[390px]:grid-cols-6 gap-2 sm:flex sm:flex-wrap sm:gap-2.5">
+          {categoryPills.map((cat, index) => {
+            if (cat === null) {
+              return (
+                <button
+                  key="all"
+                  onClick={() => setActiveCategory(null)}
+                  className={`${getMobilePillSpan(index)} w-full sm:w-auto text-[10px] sm:text-sm px-2 sm:px-4 py-2 sm:py-2.5 rounded-xl border font-medium transition-all duration-200 ${
+                    !activeCategory
+                      ? 'bg-white text-zinc-900 border-white shadow-md'
+                      : 'border-zinc-800 text-zinc-400 hover:border-zinc-600 hover:text-zinc-200 bg-zinc-900/50'
+                  }`}
+                >
+                  Todas
+                </button>
+              );
+            }
+
             const cfg = getCategoryConfig(cat);
             return (
               <button
                 key={cat}
                 onClick={() => setActiveCategory(activeCategory === cat ? null : cat)}
-                className={`flex items-center gap-2 text-xs sm:text-sm px-3.5 sm:px-4 py-2 sm:py-2.5 rounded-xl border font-medium transition-all duration-200 ${
+                className={`${getMobilePillSpan(index)} flex w-full min-w-0 items-center justify-center gap-1 sm:w-auto sm:gap-2 text-[10px] sm:text-sm px-2 sm:px-4 py-2 sm:py-2.5 rounded-xl border font-medium transition-all duration-200 ${
                   activeCategory === cat
                     ? 'bg-white text-zinc-900 border-white shadow-md'
                     : 'border-zinc-800 text-zinc-400 hover:border-zinc-600 hover:text-zinc-200 bg-zinc-900/50'
                 }`}
-              >
-                <span className="opacity-70 w-5 h-5 flex items-center justify-center overflow-hidden">
-                  {cfg.lottie ? (
-                    <span className="w-full h-full grid place-items-center" style={{ transform: `scale(${cfg.iconScale ?? 1})` }}>
+                >
+                <span className="opacity-70 w-5 h-5 shrink-0 flex items-center justify-center overflow-hidden">
+                  <span className="sm:hidden" aria-hidden="true">{cfg.icon}</span>
+                  {cfg.lottie && (
+                    <span className="hidden w-full h-full sm:grid place-items-center" style={{ transform: `scale(${cfg.iconScale ?? 1})` }}>
                       <DotLottieReact className="w-full h-full" src={cfg.lottie} loop autoplay />
                     </span>
-                  ) : (
-                    <span>{cfg.icon}</span>
                   )}
                 </span>
-                {cat}
+                <span className="whitespace-nowrap">{cat}</span>
               </button>
             );
           })}
@@ -266,4 +287,3 @@ export function FormulasSection({
     </section>
   );
 }
-

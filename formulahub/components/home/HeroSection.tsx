@@ -63,15 +63,6 @@ export function HeroSection({
           className="relative z-10 w-full max-w-5xl 2xl:max-w-6xl mx-auto text-center pt-20 sm:pt-24"
           style={{ animation: 'slideUp 0.9s cubic-bezier(0.16, 1, 0.3, 1)' }}
         >
-          {/* Badge */}
-          <div className="inline-flex items-center gap-2.5 px-5 sm:px-6 py-2 sm:py-2.5 rounded-full bg-violet-500/8 border border-violet-500/20 text-violet-300 text-sm sm:text-base font-medium mb-8 sm:mb-10 backdrop-blur-sm">
-            <span
-              className="w-2 h-2 sm:w-2.5 sm:h-2.5 rounded-full bg-violet-400"
-              style={{ animation: 'pulse-soft 2s ease-in-out infinite' }}
-            />
-            Hub de Fórmulas Ativas
-          </div>
-
           {/* Title */}
           <h1 className="text-4xl sm:text-6xl md:text-7xl lg:text-8xl 2xl:text-[6.5rem] font-black tracking-tight leading-[1.15] mb-6 sm:mb-8 overflow-visible">
             <span className="sr-only">Seu Glossário de fórmulas ativas</span>
@@ -205,4 +196,3 @@ export function HeroSection({
     </>
   );
 }
-
