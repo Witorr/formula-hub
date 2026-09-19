@@ -42,7 +42,7 @@ export function CategoriesSection({ allCategories, activeCategory, combinedOpera
             <button
               key={cat}
               onClick={() => onCategoryClick(cat)}
-              className={`group relative flex flex-col items-center gap-3 sm:gap-4 p-5 sm:p-7 lg:p-8 rounded-2xl border transition-all duration-300 hover:-translate-y-1 hover:shadow-xl hover:shadow-black/30 ${
+              className={`group relative min-w-0 flex flex-col items-center gap-3 sm:gap-4 p-5 sm:p-7 lg:p-8 rounded-2xl border transition-all duration-300 hover:-translate-y-1 hover:shadow-xl hover:shadow-black/30 ${
                 isActive
                   ? 'bg-violet-500/10 border-violet-500/40 shadow-lg shadow-violet-900/20'
                   : `bg-zinc-900/50 border-zinc-800/60 ${cfg.gradient}`
@@ -56,12 +56,12 @@ export function CategoriesSection({ allCategories, activeCategory, combinedOpera
                   style={{ transform: `scale(${cfg.iconScale ?? 1})` }}
                 >
                   {cfg.lottie
-                    ? <DotLottieReact className="w-full h-full" src={cfg.lottie} loop autoplay />
+                    ? <DotLottieReact className="w-full h-full" layout={{ fit: 'contain', align: [0.5, 0.5] }} src={cfg.lottie} loop autoplay />
                     : <span className="text-2xl">{cfg.icon}</span>
                   }
                 </div>
               </div>
-              <div className="text-center">
+              <div className="w-full min-w-0 text-center [overflow-wrap:anywhere]">
                 <p className="text-xs sm:text-sm lg:text-base font-semibold text-white/90 leading-tight">{cat}</p>
                 <p className="text-[11px] sm:text-xs lg:text-sm text-zinc-500 mt-1">
                   {count} {count === 1 ? 'fórmula' : 'fórmulas'}

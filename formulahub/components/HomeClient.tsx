@@ -399,6 +399,7 @@ export function HomeClient({ initialDynamicOperations }: { initialDynamicOperati
         search={search}
         setSearch={(v) => { setSearch(v); if (heroGenerateError) setHeroGenerateError(null); }}
         filteredCount={filtered.length}
+        totalFormulaCount={combinedOperations.length}
         heroGenerating={heroGenerating}
         heroGenerateError={heroGenerateError}
         typedHeroWord={typedHeroWord}

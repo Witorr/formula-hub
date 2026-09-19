@@ -13,7 +13,6 @@
  */
 
 import type { Language, Operation } from '@/data/formulas';
-import { operations } from '@/data/formulas';
 import { MatrixRain } from './MatrixRain';
 import { PreviewMockup } from './PreviewMockup';
 
@@ -21,6 +20,7 @@ type Props = {
   search: string;
   setSearch: (v: string) => void;
   filteredCount: number;
+  totalFormulaCount: number;
   heroGenerating: boolean;
   heroGenerateError: string | null;
   typedHeroWord: string;
@@ -34,6 +34,7 @@ export function HeroSection({
   search,
   setSearch,
   filteredCount,
+  totalFormulaCount,
   heroGenerating,
   heroGenerateError,
   typedHeroWord,
@@ -103,9 +104,10 @@ export function HeroSection({
           </p>
 
           {/* Search Bar */}
-          <div className="relative w-full max-w-3xl 2xl:max-w-4xl mx-auto mb-10 sm:mb-14">
+          <div className="relative flex items-center gap-2 sm:gap-4 w-full max-w-3xl 2xl:max-w-4xl mx-auto mb-10 sm:mb-14 bg-zinc-900/60 border border-zinc-700/40 rounded-2xl pl-3 sm:pl-6 pr-2 sm:pr-3 py-2 focus-within:border-violet-500/50 focus-within:ring-2 focus-within:ring-violet-500/15 transition-all duration-300 backdrop-blur-md">
             <svg
-              className="absolute left-5 sm:left-6 top-1/2 -translate-y-1/2 w-5 h-5 sm:w-6 sm:h-6 text-zinc-500 pointer-events-none"
+              className="hidden sm:block w-6 h-6 shrink-0 text-zinc-500 pointer-events-none"
+              aria-hidden="true"
               fill="none"
               viewBox="0 0 24 24"
               stroke="currentColor"
@@ -116,7 +118,9 @@ export function HeroSection({
             <input
               id="hero-search"
               type="text"
-              placeholder="Buscar fórmula... Ex: PROCV, SOMASE, IF"
+              placeholder="Buscar fórmula..."
+              aria-label="Buscar fórmula"
+              title="Busque por uma fórmula, como PROCV, SOMASE ou IF"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               onKeyDown={(e) => {
@@ -124,12 +128,12 @@ export function HeroSection({
                   noResults ? onHeroGenerate() : onScrollToFormulas();
                 }
               }}
-              className="w-full bg-zinc-900/60 border border-zinc-700/40 rounded-2xl pl-14 sm:pl-16 pr-28 sm:pr-40 py-4 sm:py-5 text-base sm:text-lg text-white placeholder-zinc-500 outline-none focus:border-violet-500/50 focus:ring-2 focus:ring-violet-500/15 transition-all duration-300 backdrop-blur-md"
+              className="min-w-0 w-full flex-1 bg-transparent py-2 sm:py-3 text-base sm:text-lg text-white placeholder-zinc-500 outline-none"
             />
             <button
               onClick={noResults ? onHeroGenerate : onScrollToFormulas}
               disabled={heroGenerating}
-              className={`absolute right-2 sm:right-3 top-1/2 -translate-y-1/2 px-5 sm:px-8 py-2.5 sm:py-3 text-sm sm:text-base font-semibold rounded-xl text-white transition-all duration-300 shadow-md disabled:opacity-60 disabled:cursor-not-allowed flex items-center gap-2 ${
+              className={`shrink-0 px-3 sm:px-8 py-2.5 sm:py-3 text-sm sm:text-base font-semibold rounded-xl text-white transition-all duration-300 shadow-md disabled:opacity-60 disabled:cursor-not-allowed flex items-center gap-2 ${
                 noResults
                   ? 'bg-gradient-to-r from-fuchsia-600 to-violet-600 hover:from-fuchsia-500 hover:to-violet-500 shadow-fuchsia-900/30'
                   : 'bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-500 hover:to-indigo-500 shadow-violet-900/20'
@@ -163,8 +167,8 @@ export function HeroSection({
           {/* Stats */}
           <div className="flex flex-wrap items-center justify-center gap-6 sm:gap-8 md:gap-12 text-sm sm:text-base text-zinc-500">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-violet-500/10 border border-violet-500/15 flex items-center justify-center">
-                <span className="text-violet-400 text-sm sm:text-base font-bold">{operations.length}</span>
+              <div className="min-w-10 h-10 sm:min-w-12 sm:h-12 px-2 rounded-xl bg-violet-500/10 border border-violet-500/15 flex items-center justify-center">
+                <span className="text-violet-400 text-sm sm:text-base font-bold">{totalFormulaCount}</span>
               </div>
               <span>Fórmulas</span>
             </div>

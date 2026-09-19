@@ -59,15 +59,7 @@ export function FormulasSection({
   const getMobilePillSpan = (index: number) => {
     const isLastUnpairedPill = categoryPills.length % 2 === 1 && index === categoryPills.length - 1;
 
-    if (index < 3) {
-      return isLastUnpairedPill
-        ? 'col-span-2 min-[390px]:col-span-2'
-        : 'col-span-1 min-[390px]:col-span-2';
-    }
-
-    return isLastUnpairedPill
-      ? 'col-span-2 min-[390px]:col-span-3'
-      : 'col-span-1 min-[390px]:col-span-3';
+    return isLastUnpairedPill ? 'col-span-2' : 'col-span-1';
   };
 
   return (
@@ -134,7 +126,7 @@ export function FormulasSection({
         </div>
 
         {/* Category pills */}
-        <div className="grid grid-cols-2 min-[390px]:grid-cols-6 gap-2 sm:flex sm:flex-wrap sm:gap-2.5">
+        <div className="grid min-w-0 grid-cols-2 gap-2 sm:flex sm:flex-wrap sm:gap-2.5">
           {categoryPills.map((cat, index) => {
             if (cat === null) {
               return (
@@ -163,15 +155,14 @@ export function FormulasSection({
                     : 'border-zinc-800 text-zinc-400 hover:border-zinc-600 hover:text-zinc-200 bg-zinc-900/50'
                 }`}
                 >
-                <span className="opacity-70 w-5 h-5 shrink-0 flex items-center justify-center overflow-hidden">
-                  <span className="sm:hidden" aria-hidden="true">{cfg.icon}</span>
-                  {cfg.lottie && (
-                    <span className="hidden w-full h-full sm:grid place-items-center" style={{ transform: `scale(${cfg.iconScale ?? 1})` }}>
-                      <DotLottieReact className="w-full h-full" src={cfg.lottie} loop autoplay />
+                <span aria-hidden="true" className="opacity-70 w-5 h-5 shrink-0 flex items-center justify-center overflow-hidden">
+                  {cfg.lottie ? (
+                    <span className="grid w-full h-full place-items-center" style={{ transform: `scale(${cfg.iconScale ?? 1})` }}>
+                      <DotLottieReact className="w-full h-full" layout={{ fit: 'contain', align: [0.5, 0.5] }} src={cfg.lottie} loop autoplay />
                     </span>
-                  )}
+                  ) : <span>{cfg.icon}</span>}
                 </span>
-                <span className="whitespace-nowrap">{cat}</span>
+                <span className="min-w-0 whitespace-normal break-words leading-snug sm:whitespace-nowrap">{cat}</span>
               </button>
             );
           })}
@@ -191,7 +182,7 @@ export function FormulasSection({
             {paginatedOperations.map((op, index) => (
               <div
                 key={op.id}
-                className="h-full"
+                className="h-full min-w-0"
                 style={{ animation: `slideUp 0.5s cubic-bezier(0.16, 1, 0.3, 1) ${index * 0.06}s both` }}
               >
                 <FormulaCard
