@@ -9,6 +9,9 @@ import {
   validateSearchQuery,
 } from '@/lib/api-guard';
 
+export const runtime = 'nodejs';
+export const maxDuration = 120;
+
 function cachedOpToValidatableShape(cached: any) {
   const equivalents = (cached.equivalents ?? []).map((eq: any) => ({
     language: eq.language,
