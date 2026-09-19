@@ -91,26 +91,42 @@ export function getClientIp(req: Request): string {
 
 // ─── Origin check ────────────────────────────────────────────────────────────
 
-function getAllowedOrigins(): string[] {
-  if (process.env.ALLOWED_ORIGINS) {
-    return process.env.ALLOWED_ORIGINS
-      .split(',')
-      .map((s) => s.trim())
-      .filter(Boolean);
+function normalizeOrigin(value: string): string | null {
+  try {
+    const url = new URL(value.trim());
+    if (!['http:', 'https:'].includes(url.protocol) || url.username || url.password) return null;
+    return url.origin;
+  } catch {
+    return null;
   }
-  const list: string[] = [];
+}
+
+function getAllowedOrigins(req: Request): string[] {
+  // An explicit allowlist remains authoritative, including behind proxies.
+  if (process.env.ALLOWED_ORIGINS?.trim()) {
+    return process.env.ALLOWED_ORIGINS.split(',')
+      .map(normalizeOrigin)
+      .filter((origin): origin is string => origin !== null);
+  }
+  // Relative browser fetches should work on the deployment's own origin.
+  // Do not trust arbitrary X-Forwarded-Host values to expand this list.
+  const list: string[] = [req.url];
   if (process.env.NEXT_PUBLIC_SITE_URL) list.push(process.env.NEXT_PUBLIC_SITE_URL);
   if (process.env.VERCEL_URL) list.push(`https://${process.env.VERCEL_URL}`);
+  if (process.env.VERCEL_PROJECT_PRODUCTION_URL) {
+    list.push(`https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`);
+  }
   if (process.env.NODE_ENV !== 'production') {
     list.push('http://localhost:3000', 'http://localhost:3001');
   }
-  return list;
+  return list.map(normalizeOrigin).filter((origin): origin is string => origin !== null);
 }
 
 export function isOriginAllowed(req: Request): boolean {
   const origin = req.headers.get('origin');
-  if (!origin) return false;
-  const allowed = getAllowedOrigins();
+  // Origin headers must be serialized origins, never URLs with paths/credentials.
+  if (!origin || normalizeOrigin(origin) !== origin) return false;
+  const allowed = getAllowedOrigins(req);
   return allowed.includes(origin);
 }
 

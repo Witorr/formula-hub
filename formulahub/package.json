@@ -8,6 +8,7 @@
     "postinstall": "prisma generate",
     "start": "next start",
     "lint": "eslint .",
+    "test": "node --test tests/*.test.cjs",
     "clean": "next clean"
   },
   "dependencies": {

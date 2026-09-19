@@ -2,7 +2,11 @@ import { GoogleGenAI } from '@google/genai';
 
 const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY! });
 const MODEL = 'gemini-2.5-flash';
-const LLM_TIMEOUT_MS = Number(process.env.LLM_TIMEOUT_MS) || 30_000;
+const configuredTimeout = Number(process.env.LLM_TIMEOUT_MS);
+// Keep time for database work and the response within the route's 120s budget.
+const LLM_TIMEOUT_MS = Number.isFinite(configuredTimeout) && configuredTimeout > 0
+  ? Math.min(configuredTimeout, 100_000)
+  : 90_000;
 
 export class LlmTimeoutError extends Error {
   constructor(timeoutMs: number) {
@@ -44,6 +48,7 @@ export async function generateDynamicFormula(searchQuery: string) {
     contents: [{ role: 'user', parts: [{ text: userMessage }] }],
     config: {
       abortSignal: controller.signal,
+      thinkingConfig: { thinkingBudget: 1024 },
       systemInstruction: SYSTEM_INSTRUCTION,
       responseMimeType: 'application/json',
       responseSchema: {
@@ -94,7 +99,7 @@ export async function generateDynamicFormula(searchQuery: string) {
       },
     },
     });
-  } catch (err: any) {
+  } catch (err: unknown) {
     if (controller.signal.aborted) {
       throw new LlmTimeoutError(LLM_TIMEOUT_MS);
     }

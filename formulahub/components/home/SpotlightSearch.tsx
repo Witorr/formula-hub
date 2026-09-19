@@ -8,7 +8,8 @@
  */
 
 import type { Operation } from '@/data/formulas';
-import { CATEGORY_CONFIG } from './constants';
+import { DotLottieReact } from '@lottiefiles/dotlottie-react';
+import { getCategoryConfig } from './constants';
 
 type Props = {
   isOpen: boolean;
@@ -114,36 +115,43 @@ export function SpotlightSearch({
               <div className="px-3 py-2 text-xs font-semibold text-zinc-500 uppercase tracking-wider">
                 {search ? 'Resultados da Busca' : 'Fórmulas Disponíveis'}
               </div>
-              {filtered.map((op) => (
+              {filtered.map((op) => {
+                const category = getCategoryConfig(op.category);
+                return (
                 <button
                   key={op.id}
                   onClick={() => onSelectFormula(op.name)}
-                  className="w-full text-left p-3 hover:bg-zinc-800/80 focus:bg-zinc-800/80 rounded-xl flex items-center justify-between group transition-colors outline-none border border-transparent hover:border-zinc-700/50"
+                  className="w-full min-w-0 text-left p-2 sm:p-3 hover:bg-zinc-800/80 focus:bg-zinc-800/80 rounded-xl grid grid-cols-[2.5rem_minmax(0,1fr)_5.5rem_1.25rem] sm:grid-cols-[3rem_minmax(0,1fr)_11rem_5.5rem] items-center gap-2 sm:gap-4 group transition-colors outline-none border border-transparent hover:border-zinc-700/50"
                 >
-                  <div className="flex items-center gap-4">
-                    <div className={`w-12 h-12 rounded-xl flex items-center justify-center shrink-0 ${CATEGORY_CONFIG[op.category]?.iconBg || 'bg-zinc-800'}`}>
-                      <div className="w-7 h-7 flex items-center justify-center leading-none">
-                        <span className="text-2xl leading-none">{CATEGORY_CONFIG[op.category]?.icon}</span>
-                      </div>
-                    </div>
-                    <div>
-                      <div className="flex items-center gap-2 mb-0.5">
-                        <h4 className="text-white font-medium sm:text-lg leading-none">{op.name}</h4>
-                        <span className="px-2 py-0.5 rounded text-[10px] font-semibold bg-zinc-800 text-zinc-400 border border-zinc-700">
-                          {op.category}
-                        </span>
-                      </div>
-                      <p className="text-xs sm:text-sm text-zinc-500 line-clamp-1">{op.description}</p>
+                  <div aria-hidden="true" className={`w-10 h-10 sm:w-12 sm:h-12 rounded-xl overflow-hidden flex items-center justify-center ${category.iconBg}`}>
+                    <div className="w-8 h-8 sm:w-10 sm:h-10" style={{ transform: `scale(${category.iconScale ?? 1})` }}>
+                      <DotLottieReact
+                        className="w-full h-full"
+                        layout={{ fit: 'contain', align: [0.5, 0.5] }}
+                        src={category.lottie}
+                        loop
+                        autoplay
+                      />
                     </div>
                   </div>
-                  <div className="flex items-center gap-3 pr-2">
+                  <div className="min-w-0">
+                    <h4 className="text-white font-medium text-sm sm:text-lg leading-snug line-clamp-2 mb-0.5 [overflow-wrap:anywhere]">{op.name}</h4>
+                    <p className="text-xs sm:text-sm text-zinc-500 truncate">{op.description}</p>
+                  </div>
+                  <div className="min-w-0 flex items-center justify-center">
+                    <span className="max-w-full px-2 py-1 rounded text-[10px] leading-snug text-center font-semibold bg-zinc-800 text-zinc-400 border border-zinc-700">
+                      {op.category}
+                    </span>
+                  </div>
+                  <div className="flex items-center justify-end gap-2">
                     <span className="hidden sm:flex text-xs text-zinc-600 font-medium group-hover:text-violet-400 transition-colors">Explorar</span>
-                    <svg className="w-5 h-5 text-zinc-600 group-hover:text-violet-400 -translate-x-2 group-hover:translate-x-0 transition-all shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <svg className="w-5 h-5 text-zinc-600 group-hover:text-violet-400 group-hover:translate-x-0.5 transition-all shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                     </svg>
                   </div>
                 </button>
-              ))}
+                );
+              })}
             </div>
           )}
         </div>
