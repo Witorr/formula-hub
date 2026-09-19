@@ -68,7 +68,7 @@ export function FormulaCard({
   return (
     <div
       className="
-        h-full
+        h-full min-w-0 [overflow-wrap:anywhere]
         group bg-zinc-900 border border-zinc-800 rounded-2xl overflow-hidden flex flex-col
         hover:border-zinc-700 hover:shadow-xl hover:shadow-black/40
         transition-all duration-300
@@ -77,9 +77,9 @@ export function FormulaCard({
     >
       {/* ── Header ── */}
       <div className="p-5 border-b border-zinc-800/80">
-        <div className="flex items-start justify-between gap-3 mb-3">
-          <h3 className="font-bold text-white text-base leading-snug">{operation.name}</h3>
-          <span className="shrink-0 text-xs px-2.5 py-1 rounded-full bg-zinc-800 text-zinc-400 whitespace-nowrap font-medium">
+        <div className="flex flex-col sm:flex-row items-start justify-between gap-3 mb-3">
+          <h3 className="flex-1 min-w-0 font-bold text-white text-base leading-snug">{operation.name}</h3>
+          <span className="max-w-full sm:max-w-[50%] shrink-0 text-[10px] px-2 py-1 rounded-full bg-zinc-800 text-zinc-400 whitespace-normal leading-snug font-medium">
             {operation.category}
           </span>
         </div>
@@ -126,7 +126,7 @@ export function FormulaCard({
       ) : (
         /* ── Modo tabs ── */
         <>
-          <div className="flex border-b border-zinc-800/80">
+          <div className="flex min-w-0 border-b border-zinc-800/80">
             {languages.map((lang) => {
               const cfg = LANGUAGE_CONFIG[lang];
               const isActive = activeLang === lang;
@@ -134,7 +134,7 @@ export function FormulaCard({
                 <button
                   key={lang}
                   onClick={() => setActiveLang(lang)}
-                  className={`flex-1 text-xs py-3 px-2 font-semibold transition-colors whitespace-nowrap ${
+                  className={`min-w-0 flex-1 px-0.5 py-3 text-[10px] sm:px-2 sm:text-xs font-semibold leading-tight transition-colors whitespace-normal ${
                     isActive
                       ? `${cfg.color} border-b-2 ${cfg.border} -mb-px bg-zinc-800/40`
                       : 'text-zinc-500 hover:text-zinc-300'

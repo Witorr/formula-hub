@@ -6,7 +6,7 @@ html {
 }
 
 body {
-  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  font-family: 'IBM Plex Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
 }
 
 /* ── Custom Scrollbar ── */
@@ -67,6 +67,22 @@ body {
   0%   { background-position: 0% 50%; }
   50%  { background-position: 100% 50%; }
   100% { background-position: 0% 50%; }
+}
+
+@keyframes hero-caret-blink {
+  50% { border-color: transparent; }
+}
+
+.hero-typing-caret {
+  border-right: 2px solid #a78bfa;
+  animation: hero-caret-blink 0.75s step-end infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hero-typing-caret {
+    border-right-color: transparent;
+    animation: none;
+  }
 }
 
 @keyframes pulse-soft {

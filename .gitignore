@@ -1,0 +1,10 @@
+# Ignore Antigravity agent configuration and states
+.agents/
+skills-lock.json
+
+
+# Local IDE and AI assistant configs
+.gemini/
+.codex/
+.mcp.json
+.vscode/

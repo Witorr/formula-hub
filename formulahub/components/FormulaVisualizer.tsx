@@ -447,7 +447,7 @@ export function FormulaVisualizer({ operation, initialLanguage, onClose }: Formu
             {/* Fechar */}
             <button
               onClick={onClose}
-              className="w-8 h-8 rounded-lg bg-zinc-800 hover:bg-zinc-700 flex items-center justify-center text-zinc-400 hover:text-white transition-colors ml-4"
+              className="w-8 h-8 rounded-lg bg-red-500/15 hover:bg-red-500/25 flex items-center justify-center text-red-400 hover:text-red-300 transition-colors ml-4"
             >
               <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
